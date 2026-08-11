@@ -11,7 +11,15 @@ Each person gets a stacked bar and percentages (always adding up to 100%).
 
 ## Dashboard preview
 
-![Assignee workload dashboard showing stacked bars and percentages by person](docs/dashboard-screenshot.png)
+<p align="center">
+  <img
+    src="docs/dashboard-screenshot.png"
+    alt="Assignee workload dashboard — stacked bars and percentages by person"
+    width="920"
+  />
+</p>
+
+> Live view of project **KAN**: each assignee’s ticket mix across Backlog, In Progress, In Review, and Closed.
 
 ---
 
@@ -27,6 +35,8 @@ Think of the system as **four boxes** talking to each other:
 | **Atlassian / Jira** | Your company’s Jira cloud | Source of truth for tickets |
 
 ![Architecture flow: Browser → Next.js → Worker → Atlassian MCP / Jira REST → aggregate → dashboard](docs/architecture-flow.png)
+
+<p align="center"><em>Request path from the browser to Jira and back into the dashboard table.</em></p>
 
 ---
 
