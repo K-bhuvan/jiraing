@@ -1,0 +1,10 @@
+{
+  "name": "jira-ticketing",
+  "private": true,
+  "scripts": {
+    "dev:worker": "npm --prefix worker run dev",
+    "dev:web": "npm --prefix web run dev",
+    "test:worker": "npm --prefix worker test",
+    "start:worker": "npm --prefix worker start"
+  }
+}
