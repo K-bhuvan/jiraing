@@ -9,6 +9,10 @@ A simple web app that shows **who owns which Jira tickets**, grouped by person, 
 
 Each person gets a stacked bar and percentages (always adding up to 100%).
 
+## Dashboard preview
+
+![Assignee workload dashboard showing stacked bars and percentages by person](docs/dashboard-screenshot.png)
+
 ---
 
 ## Big picture
