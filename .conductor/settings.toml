@@ -1,0 +1,13 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = """
+cd worker && python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cd ../web && npm install
+"""
+run_mode = "concurrent"
+
+[scripts.run.dev]
+command = "./scripts/dev.sh"
+default = true
+icon = "play"
