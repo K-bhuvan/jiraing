@@ -25,18 +25,17 @@ Each person gets a stacked bar and percentages (always adding up to 100%).
 
 ## Big picture
 
-Think of the system as **four boxes** talking to each other:
+Three zones, left → right:
 
-| Piece | What it is | Simple role |
-|-------|------------|-------------|
-| **Browser** | Your web browser | Shows the dashboard |
-| **Web app** (`web/`) | Next.js website | Builds the page and asks the worker for data |
-| **Worker** (`worker/`) | Small backend API | Fetches tickets from Jira and does the math |
-| **Atlassian / Jira** | Your company’s Jira cloud | Source of truth for tickets |
+| Zone | What lives there | Simple role |
+|------|------------------|-------------|
+| **Your machine** | Browser, Next.js (`web/`), Python worker (`worker/`) | UI + local API |
+| **Worker decisions** | MCP vs REST, then aggregate | Fetch tickets and do the math |
+| **Atlassian Cloud** | Rovo MCP + Jira | Source of truth for tickets |
 
-![Architecture flow: Browser → Next.js → Worker → Atlassian MCP / Jira REST → aggregate → dashboard](docs/architecture-flow.png)
+![Architecture flow with numbered steps from browser to Jira and back to the dashboard](docs/architecture-flow.png)
 
-<p align="center"><em>Request path from the browser to Jira and back into the dashboard table.</em></p>
+<p align="center"><em>Same numbered steps as below — MCP is preferred; REST is the automatic backup.</em></p>
 
 ---
 
@@ -44,21 +43,19 @@ Think of the system as **four boxes** talking to each other:
 
 When you open or refresh the dashboard, this is what happens:
 
-1. **You open the site** in the browser (http://localhost:3000).
-2. **The web app** asks the worker: “Give me the latest workload summary.”
-3. **The worker** logs into Atlassian using the email + API token from your `.env` file.
-4. **Preferred path (MCP):** the worker talks to **Atlassian Rovo MCP** (a standard “tool bridge” into Jira) and searches tickets in your project (for example `KAN`).
-5. **Backup path (REST):** if MCP cannot search tickets, the worker calls **Jira’s normal API** instead. Same login, different door. The dashboard still works.
-6. **The worker sorts tickets** by the person assigned to them. Tickets with no assignee become **Unassigned**.
-7. **Each ticket is put in one bucket** based on its status name:
+1. **Open the site** in the browser (http://localhost:3000).
+2. **Ask the worker** — the web app proxies to `WORKER_URL/workload`.
+3. **Authenticate** — the worker uses the email + API token from your `.env` file.
+4. **Preferred fetch (MCP)** — talk to **Atlassian Rovo MCP** and search tickets in your project (for example `KAN`).
+5. **Automatic backup (REST)** — if MCP cannot search, call **Jira’s REST API** instead. Same login, different door.
+6. **Group & score** — sort tickets by assignee (`Unassigned` if none), bucket by status, and compute percentages that sum to 100:
    - status contains “review” → **In Review**
    - Done / Closed / Resolved → **Closed**
    - In Progress → **In Progress**
    - otherwise → **Backlog**
-8. **Percentages are calculated** per person (example: 2 of 3 tickets in backlog → about 67% backlog).
-9. **The web app draws the table** — one row per person, with a colored stacked bar and the four percentages.
+7. **Render** — the web app draws one row per person, with a stacked bar and the four percentages.
 
-The header pill **via MCP** means step 4 worked. **via REST** means the backup path in step 5 was used.
+The header pill **via MCP** means step 4 worked. **via REST** means step 5 was used.
 
 ---
 
@@ -89,7 +86,7 @@ So if **In Review** looks empty for jet, check who owns that ticket on the Jira 
 ```text
 jira_ticketing/
   web/       ← the website (dashboard UI)
-  worker/    ← the API that talks to Jira / MCP
+  worker/    ← Python FastAPI API that talks to Jira / MCP
   docs/      ← diagrams and docs assets
   .env       ← secrets (email, API token, project key) — never commit this
 ```
@@ -109,9 +106,13 @@ jira_ticketing/
 
 ```bash
 cd worker
-npm install
-npm run start
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 4000 --reload
 ```
+
+Or from the repo root (after the venv exists): `npm run start:worker`
 
 3. Start the website (Terminal 2):
 
@@ -123,10 +124,9 @@ npm run dev
 
 4. Open **http://localhost:3000** in your browser.
 
-> **Tip:** Install and run from the **same** environment (all Windows **or** all WSL). Mixing them can break native packages like `esbuild`.
+> **Tip:** Use Python **3.11+** for the worker. Install and run the web app from the **same** environment (all Windows **or** all WSL) so native packages like `esbuild` work.
 
 Optional for the website: set `WORKER_URL=http://localhost:4000` in `web/.env.local` (this is the default).
-
 ---
 
 ## Words you might see
@@ -137,7 +137,7 @@ Optional for the website: set `WORKER_URL=http://localhost:4000` in `web/.env.lo
 | **MCP** | Model Context Protocol — a standard way apps call tools (here: Jira tools hosted by Atlassian) |
 | **REST API** | Jira’s normal HTTP interface for reading/writing tickets |
 | **cloudId** | Atlassian’s internal ID for your Jira site (needed for MCP Jira calls) |
-| **Worker** | Our small backend that fetches and summarizes tickets |
+| **Worker** | Our Python FastAPI backend that fetches and summarizes tickets |
 
 ---
 

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Architecture flow</title>
+<style>
+  :root {
+    --ink: #1b242c;
+    --muted: #5b6773;
+    --line: #c5ced6;
+    --fill: #ffffff;
+    --soft: #f4f7fa;
+    --accent: #2f6fed;
+    --accent-soft: #e8f0fe;
+    --ok: #0f7b5c;
+    --ok-soft: #e6f5f0;
+    --warn: #9a6700;
+    --warn-soft: #fff6dd;
+    --boundary: #9aa8b5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 36px 40px 44px;
+    background: #eef2f6;
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  .canvas {
+    width: 1180px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #d7dee6;
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    box-shadow: 0 10px 30px rgba(27, 36, 44, 0.06);
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 210px 1fr 280px;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .zone {
+    border: 1.5px dashed var(--boundary);
+    border-radius: 12px;
+    background: var(--soft);
+    padding: 14px;
+    position: relative;
+  }
+  .zone.solid {
+    border-style: solid;
+    background: #f8fafc;
+  }
+  .zone-title {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: #fff;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    justify-content: center;
+  }
+  .card {
+    background: var(--fill);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 0 rgba(27,36,44,0.04);
+  }
+  .card.primary { border-color: #9db7f5; background: var(--accent-soft); }
+  .card.ok { border-color: #8fc9b5; background: var(--ok-soft); }
+  .card.warn { border-color: #e4c56a; background: var(--warn-soft); }
+  .card h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .card p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+  .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .icon.user { background: #445566; }
+  .icon.web { background: var(--accent); }
+  .icon.api { background: #6b4ea2; }
+  .icon.mcp { background: var(--ok); }
+  .icon.rest { background: var(--warn); }
+  .icon.jira { background: #2684ff; }
+  .middle {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .flow-row {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+  }
+  .arrow-line {
+    width: 100%;
+    height: 2px;
+    background: #8a97a5;
+    position: relative;
+  }
+  .arrow-line::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    border: 5px solid transparent;
+    border-left-color: #8a97a5;
+  }
+  .arrow.down .arrow-line {
+    width: 2px;
+    height: 28px;
+    margin: 0 auto;
+  }
+  .arrow.down .arrow-line::after {
+    right: -4px;
+    top: auto;
+    bottom: -1px;
+    border: 5px solid transparent;
+    border-top-color: #8a97a5;
+  }
+  .step {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #111827;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .legend {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e4e9ef;
+  }
+  .legend-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.35;
+  }
+  .legend-item .step { margin-top: 1px; }
+  .legend-item span { color: var(--muted); }
+  .branch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .branch-label {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .center-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+  .v-connector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .v-line {
+    width: 2px;
+    height: 18px;
+    background: #8a97a5;
+  }
+</style>
+</head>
+<body>
+  <div class="canvas" id="diagram">
+    <h1>Request path: browser → Jira → dashboard</h1>
+    <p class="subtitle">Numbered steps match the “How data flows” section in the README. Preferred path is MCP; REST is the automatic backup.</p>
+
+    <div class="layout">
+      <!-- Left: you -->
+      <div class="zone solid">
+        <div class="zone-title">Your machine</div>
+        <div class="stack">
+          <div class="card">
+            <div class="icon user">U</div>
+            <h3>You (browser)</h3>
+            <p>Opens the dashboard at localhost:3000</p>
+          </div>
+          <div class="v-connector"><span class="step">1</span><div class="v-line"></div></div>
+          <div class="card primary">
+            <div class="icon web">W</div>
+            <h3>Next.js web app</h3>
+            <p><code>web/</code> — page + <code>/api/workload</code> proxy</p>
+          </div>
+          <div class="v-connector"><span class="step">2</span><div class="v-line"></div></div>
+          <div class="card" style="border-color:#c4b5e8;background:#f4effc">
+            <div class="icon api">P</div>
+            <h3>Python FastAPI worker</h3>
+            <p><code>worker/</code> — auth, fetch, aggregate</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle: worker decisions -->
+      <div class="zone">
+        <div class="zone-title">Worker decisions</div>
+        <div class="center-col">
+          <div class="card">
+            <h3>Load credentials</h3>
+            <p>Reads <code>.env</code> (email + API token + project key)</p>
+          </div>
+
+          <div class="v-connector"><span class="step">3</span><div style="font-size:11px">try MCP first</div></div>
+
+          <div class="branch">
+            <div class="branch-label">Two ways to reach Jira</div>
+            <div class="card ok">
+              <div class="icon mcp">M</div>
+              <h3>Preferred: MCP</h3>
+              <p>Atlassian Rovo MCP tool <code>searchJiraIssuesUsingJql</code></p>
+              <p style="margin-top:6px"><span class="step" style="display:inline-flex;width:18px;height:18px;font-size:10px">4</span> &nbsp;header shows <strong>via MCP</strong></p>
+            </div>
+            <div class="card warn">
+              <div class="icon rest">R</div>
+              <h3>Backup: REST</h3>
+              <p>If MCP search is unavailable → <code>/rest/api/3/search/jql</code></p>
+              <p style="margin-top:6px"><span class="step" style="display:inline-flex;width:18px;height:18px;font-size:10px">5</span> &nbsp;header shows <strong>via REST</strong></p>
+            </div>
+          </div>
+
+          <div class="v-connector"><span class="step">6</span><div style="font-size:11px">issues in</div></div>
+
+          <div class="card">
+            <h3>Aggregate by assignee</h3>
+            <p>Bucket each ticket → Backlog · In Progress · In Review · Closed, then % that sum to 100</p>
+          </div>
+
+          <div class="v-connector"><span class="step">7</span><div style="font-size:11px">JSON out</div></div>
+
+          <div class="card primary">
+            <h3>Dashboard table</h3>
+            <p>One row per person with stacked bar + percentages</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Atlassian -->
+      <div class="zone solid">
+        <div class="zone-title">Atlassian Cloud</div>
+        <div class="stack">
+          <div class="card ok">
+            <div class="icon mcp">M</div>
+            <h3>Rovo MCP</h3>
+            <p><code>mcp.atlassian.com</code><br/>tool bridge into Jira</p>
+          </div>
+          <div class="card" style="border-color:#9ec2ff;background:#eef5ff">
+            <div class="icon jira">J</div>
+            <h3>Jira Cloud</h3>
+            <p>Source of truth for tickets<br/>project key from <code>.env</code></p>
+          </div>
+          <div class="card">
+            <h3>Auth</h3>
+            <p>Basic auth with Atlassian email + API token (same for MCP and REST)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="step">1</span><div><strong>Open the site</strong><br/><span>Browser loads Next.js at port 3000</span></div></div>
+      <div class="legend-item"><span class="step">2</span><div><strong>Ask the worker</strong><br/><span>Web proxies to <code>WORKER_URL/workload</code></span></div></div>
+      <div class="legend-item"><span class="step">3</span><div><strong>Authenticate</strong><br/><span>Worker uses email + API token from <code>.env</code></span></div></div>
+      <div class="legend-item"><span class="step">4</span><div><strong>Preferred fetch</strong><br/><span>Search issues via Atlassian MCP</span></div></div>
+      <div class="legend-item"><span class="step">5</span><div><strong>Automatic backup</strong><br/><span>Fall back to Jira REST if MCP can’t search</span></div></div>
+      <div class="legend-item"><span class="step">6</span><div><strong>Group &amp; score</strong><br/><span>Assignee buckets + percentages</span></div></div>
+      <div class="legend-item"><span class="step">7</span><div><strong>Render</strong><br/><span>Dashboard draws the stacked-bar table</span></div></div>
+      <div class="legend-item"><span class="step" style="background:#0f7b5c">✓</span><div><strong>Result</strong><br/><span>Same UI whether MCP or REST was used</span></div></div>
+    </div>
+  </div>
+</body>
+</html>
