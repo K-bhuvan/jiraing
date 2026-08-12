@@ -15,8 +15,9 @@ const body = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Assignee Workload | Jira",
-  description: "Top-down assignee workload by backlog, progress, review, and closed.",
+  title: "Assignee & commit mix | Jira + GitHub",
+  description:
+    "Who owns Jira tickets and who ships commits, as stacked-bar mixes.",
 };
 
 export default function RootLayout({

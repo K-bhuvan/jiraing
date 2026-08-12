@@ -12,6 +12,10 @@
   --bucket-progress: #f0b429;
   --bucket-review: #ef6a2f;
   --bucket-closed: #3ecf8e;
+  --commit-week: #7dd3c0;
+  --commit-month: #6ea8fe;
+  --commit-quarter: #c084fc;
+  --commit-older: #94a3b8;
   --danger: #ff7b7b;
   --ok: #6ee7a8;
 }
@@ -117,6 +121,42 @@ h1 {
   padding: 1.15rem 1.15rem 0.65rem;
   animation: rise 0.7s ease-out both;
   animation-delay: 0.08s;
+}
+
+.panel--spaced {
+  margin-top: 1.25rem;
+  animation-delay: 0.16s;
+}
+
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.85rem;
+  padding: 0 0.25rem;
+}
+
+.panel-kicker {
+  margin: 0 0 0.2rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.panel-title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.meta--compact {
+  margin-top: 0;
+  font-size: 0.82rem;
 }
 
 .legend {
